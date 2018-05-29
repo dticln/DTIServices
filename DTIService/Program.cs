@@ -17,7 +17,7 @@ namespace DTIService
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {
-                new Service1()
+                new InstalledPrograms()
             };
             ServiceBase.Run(ServicesToRun);
         }

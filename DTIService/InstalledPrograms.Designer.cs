@@ -1,6 +1,6 @@
 ﻿namespace DTIService
 {
-    partial class Service1
+    partial class InstalledPrograms
     {
         /// <summary> 
         /// Variável de designer necessária.
@@ -28,10 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            this.ServiceName = "Service1";
+            this.serviceController1 = new System.ServiceProcess.ServiceController();
+            // 
+            // InstalledPrograms
+            // 
+            this.ServiceName = "InstalledPrograms";
+
         }
 
         #endregion
+
+        private System.ServiceProcess.ServiceController serviceController1;
     }
 }
