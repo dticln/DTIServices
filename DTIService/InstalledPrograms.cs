@@ -1,4 +1,5 @@
 ﻿using DTIService.Model;
+using DTIService.Util;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -74,6 +75,10 @@ namespace DTIService
                 }
                 writer.Flush();
                 writer.Close();
+
+                Task.Factory.StartNew(() => 
+                    FileSender.Instance.UploadInstalledProgramsAsync(this.csvPath)
+                );
             }
         }
 
