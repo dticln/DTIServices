@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DTIService.Model
 {
     class ProgramLog
     {
-        private String displayName;
-        private String version;
-        private String publisher;
+        private string displayName;
+        private string version;
+        private string publisher;
         private bool is64Bits;
         public string DisplayName { get => displayName; set => displayName = value; }
         public string Version { get => version; set => version = value; }

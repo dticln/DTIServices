@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DTIService
 {
@@ -18,8 +14,8 @@ namespace DTIService
         {
             try
             {
-                this.writer = new StreamWriter(@"c:\dtiservice.log", true);
-                this.writer.WriteLine(log);
+                this.writer = new StreamWriter(@"c:\DTI Services\service.log", true);
+                this.writer.WriteLine(DateTime.Now + ": " + log);
                 this.writer.Flush();
                 this.writer.Close();
             }
