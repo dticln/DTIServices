@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace DTIService
 
         protected override void OnStart(string[] args)
         {
+            this.createVersionFile();
             this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
             LogWriter.Instance.Write("Iniciando serviço em " + Environment.MachineName);
@@ -54,12 +56,8 @@ namespace DTIService
         private void SearchForPrograms(object state)
         {
             if (!File.Exists(this.csvPath) ||
-                (File.Exists(this.csvPath) && File.GetCreationTime(this.csvPath).Month != DateTime.Now.Month))
+                (File.Exists(this.csvPath) && File.GetLastWriteTime(this.csvPath).Month != DateTime.Now.Month))
             {
-                if (File.Exists(this.csvPath))
-                {
-                    File.Delete(this.csvPath);
-                }
                 try
                 {
                     List<ProgramLog> list = new List<ProgramLog>();
@@ -69,7 +67,7 @@ namespace DTIService
                         GetInstalledAppsAtKey(list, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall", true);
                     }
                     LogWriter.Instance.Write("Registrando programas instalados.");
-                    StreamWriter writer = new StreamWriter(this.csvPath, true);
+                    StreamWriter writer = new StreamWriter(this.csvPath, false);
                     foreach (ProgramLog program in list)
                     {
                         writer.WriteLine(
@@ -132,6 +130,11 @@ namespace DTIService
                     }
                 }
             }
+        }
+
+        private void createVersionFile()
+        {
+            File.WriteAllText(@"C:\DTI Services\version.txt", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
     }
 }
