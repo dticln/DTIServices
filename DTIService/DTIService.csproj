@@ -88,14 +88,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InstalledPrograms.cs">
+    <Compile Include="API\CommandField.cs" />
+    <Compile Include="External\KeyDecoder.cs" />
+    <Compile Include="External\MSKeyFinder.cs" />
+    <Compile Include="API\IParser.cs" />
+    <Compile Include="Service\Invetory.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="InstalledPrograms.Designer.cs">
-      <DependentUpon>InstalledPrograms.cs</DependentUpon>
+    <Compile Include="Service\Invetory.Designer.cs">
+      <DependentUpon>Invetory.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\ProgramLog.cs" />
-    <Compile Include="Util\FileSender.cs" />
+    <Compile Include="API\Parser.cs" />
     <Compile Include="Util\LogWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -109,14 +113,11 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="DTIService_TemporaryKey.pfx" />
-    <None Include="install.sp1" />
     <None Include="Properties\app.manifest" />
-    <None Include="UFRGS DTICLN.pfx" />
-    <None Include="UFRGS-DTI-CLN.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="InstalledPrograms.resx">
-      <DependentUpon>InstalledPrograms.cs</DependentUpon>
+    <EmbeddedResource Include="Service\Invetory.resx">
+      <DependentUpon>Invetory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>

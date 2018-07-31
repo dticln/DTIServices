@@ -4,14 +4,16 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Management;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
+using WinProdKeyFind;
 
-namespace DTIService
+namespace DTIService.Service
 {
-    partial class InstalledPrograms : ServiceBase
+    partial class Invetory : ServiceBase
     {
         private Timer baseTimer;
         private Timer searchTimer;
@@ -28,19 +30,37 @@ namespace DTIService
             "Update for"
         };
 
-        public InstalledPrograms()
+        public Invetory()
         {
             InitializeComponent();
         }
 
         protected override void OnStart(string[] args)
-        {
-            this.createVersionFile();
+        {   
+            /*
+            try
+            {
+                LogWriter.Instance.Write(KeyDecoder.GetWindowsProductKeyFromRegistry().ToString());
+                string query = "select * from SoftwareLicensingService";
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
+                using (ManagementObjectCollection results = searcher.Get())
+                {
+                    foreach (ManagementObject result in results)
+                    {
+                        using (result)
+                        {
+                            LogWriter.Instance.Write(result.GetPropertyValue("OA3xOriginalProductKey").ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Instance.Write(ex.ToString());
+            }*/
+            this.CreateVersionFile();
             this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
-            LogWriter.Instance.Write("Iniciando serviço em " + Environment.MachineName);
-            LogWriter.Instance.Write("Sistema: " + Environment.OSVersion.ToString());
-            LogWriter.Instance.Write("Inicio em: " + DateTime.Now);
         }
 
         protected override void OnStop()
@@ -79,7 +99,7 @@ namespace DTIService
                     writer.Flush();
                     writer.Close();
                     Task.Factory.StartNew(() =>
-                        FileSender.Instance.UploadInstalledProgramsAsync(this.csvPath)
+                        API.Parser.Instance.UploadInstalledProgramsAsync(this.csvPath)
                     );
                 }
                 catch (Exception ex)
@@ -104,7 +124,7 @@ namespace DTIService
                             bool doNotWrite = false;
                             if (displayName.Length > 0)
                             {
-                                foreach(string exclude in this.excludedPrograms)
+                                foreach (string exclude in this.excludedPrograms)
                                 {
                                     if (displayName.StartsWith(exclude))
                                     {
@@ -123,7 +143,6 @@ namespace DTIService
                                     list.Add(log);
                                 }
                             }
-                            
                         }
                         catch (Exception ex)
                         { }
@@ -132,7 +151,7 @@ namespace DTIService
             }
         }
 
-        private void createVersionFile()
+        private void CreateVersionFile()
         {
             File.WriteAllText(@"C:\DTI Services\version.txt", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }

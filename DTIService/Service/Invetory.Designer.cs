@@ -1,6 +1,6 @@
-﻿namespace DTIService
+﻿namespace DTIService.Service
 {
-    partial class InstalledPrograms
+    partial class Invetory
     {
         /// <summary> 
         /// Variável de designer necessária.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.serviceController1 = new System.ServiceProcess.ServiceController();
+            this.scnInstalled = new System.ServiceProcess.ServiceController();
             // 
             // InstalledPrograms
             // 
@@ -38,6 +38,6 @@
 
         #endregion
 
-        private System.ServiceProcess.ServiceController serviceController1;
+        private System.ServiceProcess.ServiceController scnInstalled;
     }
 }

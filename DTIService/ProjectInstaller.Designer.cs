@@ -28,34 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.serviceProcessInstaller1 = new System.ServiceProcess.ServiceProcessInstaller();
-            this.IPServiceInstaller = new System.ServiceProcess.ServiceInstaller();
+            this.DTIServiceInstaller = new System.ServiceProcess.ServiceProcessInstaller();
+            this.DTIService = new System.ServiceProcess.ServiceInstaller();
             // 
-            // serviceProcessInstaller1
+            // DTIServiceInstaller
             // 
-            this.serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
-            this.serviceProcessInstaller1.Password = null;
-            this.serviceProcessInstaller1.Username = null;
-            this.serviceProcessInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceProcessInstaller1_AfterInstall);
+            this.DTIServiceInstaller.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
+            this.DTIServiceInstaller.Password = null;
+            this.DTIServiceInstaller.Username = null;
+            this.DTIServiceInstaller.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceProcessInstaller1_AfterInstall);
             // 
-            // IPServiceInstaller
+            // DTIService
             // 
-            this.IPServiceInstaller.Description = "Serviços da DTI CLN.";
-            this.IPServiceInstaller.DisplayName = "DTIServices";
-            this.IPServiceInstaller.ServiceName = "InstalledPrograms";
-            this.IPServiceInstaller.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
+            this.DTIService.Description = "Serviços da DTI CLN.";
+            this.DTIService.DisplayName = "DTIServices";
+            this.DTIService.ServiceName = "DTIServices";
+            this.DTIService.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            this.DTIService.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             // 
             // ProjectInstaller
             // 
             this.Installers.AddRange(new System.Configuration.Install.Installer[] {
-            this.serviceProcessInstaller1,
-            this.IPServiceInstaller});
+            this.DTIServiceInstaller,
+            this.DTIService});
 
         }
 
         #endregion
 
-        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller1;
-        private System.ServiceProcess.ServiceInstaller IPServiceInstaller;
+        private System.ServiceProcess.ServiceProcessInstaller DTIServiceInstaller;
+        private System.ServiceProcess.ServiceInstaller DTIService;
     }
 }

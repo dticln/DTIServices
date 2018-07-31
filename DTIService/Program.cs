@@ -1,4 +1,7 @@
-﻿using System.ServiceProcess;
+﻿using System;
+using System.ServiceProcess;
+using DTIService.Service;
+using DTIService.Util;
 
 namespace DTIService
 {
@@ -9,12 +12,16 @@ namespace DTIService
         /// </summary>
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            LogWriter.Instance.Write("Iniciando DTIServices em " + Environment.MachineName);
+            LogWriter.Instance.Write("Sistema: " + Environment.OSVersion.ToString());
+            LogWriter.Instance.Write("Inicio em: " + DateTime.Now);
+
+            ServiceBase[] servicesToRun;
+            servicesToRun = new ServiceBase[]
             {
-                new InstalledPrograms()
+                new Invetory()
             };
-            ServiceBase.Run(ServicesToRun);
+            ServiceBase.Run(servicesToRun);
         }
     }
 }

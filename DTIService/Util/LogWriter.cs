@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace DTIService
+namespace DTIService.Util
 {
     class LogWriter
     {
