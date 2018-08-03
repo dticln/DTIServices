@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DTIService.API
+﻿namespace DTIService.API
 {
     public class APICommandField
     {
@@ -14,9 +8,10 @@ namespace DTIService.API
         public const string MAC_ADDRESS = "mac_address";
         public const string IPV4 = "ipv4_address";
         public const string DESCRIPTION = "description_generic";
+        public const string CLIENT_VERSION = "client_version";
+        public const string WINDOWS_VERSION = "windows_version";
         public const string PRODUCT_KEY = "product_key";
         public const string PRODUCT_KEY_TYPE = "product_key_type";
-
         public const string BIN_REPORT = "installed_report";
 
     }

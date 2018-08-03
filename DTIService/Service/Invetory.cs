@@ -4,12 +4,12 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Management;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using WinProdKeyFind;
 
 namespace DTIService.Service
 {
@@ -61,6 +61,9 @@ namespace DTIService.Service
             this.CreateVersionFile();
             this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.RegistrationAsync(this.GetComputerInformation())
+            );
         }
 
         protected override void OnStop()
@@ -151,9 +154,54 @@ namespace DTIService.Service
             }
         }
 
+        private WinServiceComputer GetComputerInformation()
+        {
+            WinServiceComputer computer = new WinServiceComputer();
+            computer.WindowsVersion = this.GetOSFriendlyName();
+            Regex ufrgsNetwork = new Regex(@"143.54.*");
+            foreach(NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                foreach(var property in nic.GetIPProperties().UnicastAddresses)
+                {
+                    if (property.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
+                        ufrgsNetwork.Match(property.Address.ToString()).Success)
+                    {
+                        computer.Ipv4 = property.Address.ToString();
+                        computer.Mac = nic.GetPhysicalAddress().ToString();
+                        break;
+                    }
+                }
+            }
+            return computer;
+        }
+
         private void CreateVersionFile()
         {
             File.WriteAllText(@"C:\DTI Services\version.txt", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+        }
+
+
+        private string GetOSFriendlyName()
+        {
+            string ProductName = HKLMGetString(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
+            string CSDVersion = HKLMGetString(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CSDVersion");
+            if (ProductName != "")
+            {
+                return (ProductName.StartsWith("Microsoft") ? "" : "Microsoft ") + ProductName +
+                            (CSDVersion != "" ? " " + CSDVersion : "");
+            }
+            return "";
+        }
+
+        private string HKLMGetString(string path, string key)
+        {
+            try
+            {
+                RegistryKey rk = Registry.LocalMachine.OpenSubKey(path);
+                if (rk == null) return "";
+                return (string)rk.GetValue(key);
+            }
+            catch { return ""; }
         }
     }
 }

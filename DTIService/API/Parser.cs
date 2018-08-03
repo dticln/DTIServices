@@ -5,15 +5,16 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DTIService.Util;
+using DTIService.Model;
+using System.Reflection;
+using DTIService.Config;
 
 namespace DTIService.API
 {
     class Parser : IParser
     {
         private static readonly Parser instance = new Parser();
-        private const string ACCESS_KEY = "";
-        private const string API_URI = "https://www.ufrgs.br/cacln/winService/api";
- 
+
         private Parser() { }
 
         public static Parser Instance
@@ -29,35 +30,37 @@ namespace DTIService.API
             Dictionary<string, string> contentParam = new Dictionary<string, string>
             {
                 { APICommandField.COMMAND, APIActionField.INSTALLED_PROGRAMS },
-                { APICommandField.SECURE_KEY, ACCESS_KEY },
+                { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
                 { APICommandField.MACHINE_NAME, Environment.MachineName }
             };
             Dictionary<string, byte[]> binaryParam = new Dictionary<string, byte[]>
             {
                 { APICommandField.BIN_REPORT, File.ReadAllBytes(csvPath) }
             };
-            string response = await SendForm(API_URI, contentParam, binaryParam);
+            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam, binaryParam);
             if (!response.Equals(""))
             {
-                LogWriter.Instance.Write("Installed Programs response: " + response);
+                LogWriter.Instance.Write("Programas instalados. Resposta: " + response);
             }
         }
 
-        public async Task RegistrationAsync(string macAddress, string ipv4, string description = "")
+        public async Task RegistrationAsync(WinServiceComputer computer)
         {
             Dictionary<string, string> contentParam = new Dictionary<string, string>
             {
                 { APICommandField.COMMAND, APIActionField.REGISTRATION },
-                { APICommandField.SECURE_KEY, ACCESS_KEY },
-                { APICommandField.MACHINE_NAME, Environment.MachineName },
-                { APICommandField.MAC_ADDRESS, macAddress },
-                { APICommandField.IPV4, ipv4 },
-                { APICommandField.DESCRIPTION, description },
+                { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
+                { APICommandField.MACHINE_NAME, computer.Hostname },
+                { APICommandField.MAC_ADDRESS, computer.Mac },
+                { APICommandField.IPV4, computer.Ipv4 },
+                { APICommandField.DESCRIPTION, computer.Description },
+                { APICommandField.CLIENT_VERSION, Assembly.GetExecutingAssembly().GetName().Version.ToString() },
+                { APICommandField.WINDOWS_VERSION, computer.WindowsVersion }
             };
-            string response = await SendForm(API_URI, contentParam);
+            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);
             if (!response.Equals(""))
             {
-                LogWriter.Instance.Write("Registration response: " + response);
+                LogWriter.Instance.Write("Registro de estação. Resposta: " + response);
             }
         }
 
@@ -66,20 +69,21 @@ namespace DTIService.API
             Dictionary<string, string> contentParam = new Dictionary<string, string>
             {
                 { APICommandField.COMMAND, APIActionField.PRODUCT_KEY },
-                { APICommandField.SECURE_KEY, ACCESS_KEY },
+                { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
                 { APICommandField.MACHINE_NAME, Environment.MachineName },
                 { APICommandField.PRODUCT_KEY, productKey },
                 { APICommandField.PRODUCT_KEY_TYPE, keyType },
                 { APICommandField.DESCRIPTION, description },
+                { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
             };
-            string response = await SendForm(API_URI, contentParam);
+            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);
             if (!response.Equals(""))
             {
                 LogWriter.Instance.Write("Send Windows Key response: " + response);
             }
         }
 
-        private async Task<String> SendForm(String URI, Dictionary<String, String> formField, Dictionary<String, byte[]> binFormField = null)
+        protected async Task<String> SendForm(String URI, Dictionary<String, String> formField, Dictionary<String, byte[]> binFormField = null)
         {
             try
             {
@@ -97,7 +101,7 @@ namespace DTIService.API
                         form.Add(new ByteArrayContent(field.Value, 0, field.Value.Length), field.Key, field.Key);
                     }
                 }
-                HttpResponseMessage response = await httpClient.PostAsync(API_URI, form);
+                HttpResponseMessage response = await httpClient.PostAsync(EnvManager.Instance.Environment.ApiUri, form);
                 response.EnsureSuccessStatusCode();
                 httpClient.Dispose();
                 return response.Content.ReadAsStringAsync().Result;
@@ -114,5 +118,6 @@ namespace DTIService.API
             }
             return "";
         }
+
     }
 }

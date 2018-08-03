@@ -22,8 +22,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>7</ApplicationRevision>
-    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.2.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -89,9 +89,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\CommandField.cs" />
+    <Compile Include="Config\Environments\Development.cs" />
+    <Compile Include="Config\EnvManager.cs" />
+    <Compile Include="Config\Environments\IEnviroment.cs" />
+    <Compile Include="Config\Environments\Production.cs" />
     <Compile Include="External\KeyDecoder.cs" />
     <Compile Include="External\MSKeyFinder.cs" />
     <Compile Include="API\IParser.cs" />
+    <Compile Include="Model\WinServiceComputer.cs" />
     <Compile Include="Service\Invetory.cs">
       <SubType>Component</SubType>
     </Compile>
