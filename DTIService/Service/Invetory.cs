@@ -102,7 +102,7 @@ namespace DTIService.Service
                     writer.Flush();
                     writer.Close();
                     Task.Factory.StartNew(() =>
-                        API.Parser.Instance.UploadInstalledProgramsAsync(this.csvPath)
+                        API.Parser.Instance.UploadInstalledProgramsAsync(this.GetComputerInformation(), this.csvPath)
                     );
                 }
                 catch (Exception ex)

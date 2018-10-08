@@ -25,13 +25,16 @@ namespace DTIService.API
             }
         }
 
-        public async Task UploadInstalledProgramsAsync(String csvPath)
+        public async Task UploadInstalledProgramsAsync(WinServiceComputer computer, String csvPath)
         {
             Dictionary<string, string> contentParam = new Dictionary<string, string>
             {
                 { APICommandField.COMMAND, APIActionField.INSTALLED_PROGRAMS },
                 { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
-                { APICommandField.MACHINE_NAME, Environment.MachineName }
+                { APICommandField.MAC_ADDRESS, computer.Mac },
+                { APICommandField.MACHINE_NAME, computer.Hostname },
+                { APICommandField.CLIENT_VERSION, Assembly.GetExecutingAssembly().GetName().Version.ToString() },
+                { APICommandField.DESCRIPTION, computer.Description }
             };
             Dictionary<string, byte[]> binaryParam = new Dictionary<string, byte[]>
             {
@@ -112,7 +115,14 @@ namespace DTIService.API
                 LogWriter.Instance.Write("Formulário:");
                 foreach (KeyValuePair<String, String> field in formField)
                 {
-                    LogWriter.Instance.Write("\"" + field.Key + "\" => \"" + field.Value + "\"");
+                    if (field.Key != APICommandField.SECURE_KEY)
+                    {
+
+                        LogWriter.Instance.Write("\"" + field.Key + "\" => \"" + field.Value + "\"");
+                    } else
+                    {
+                        LogWriter.Instance.Write("\"" + field.Key + "\" => \"" + EnvManager.Instance.Environment + "." + APICommandField.SECURE_KEY + "\"");
+                    }
                 }
                 LogWriter.Instance.Write("Exception: " + ex);
             }
