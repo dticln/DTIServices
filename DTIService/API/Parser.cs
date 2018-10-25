@@ -67,22 +67,22 @@ namespace DTIService.API
             }
         }
 
-        public async Task SendProdKeyAsync(string productKey, string keyType = APIProductKeyType.GENERIC, string description = "")
+        public async Task SendProdKeyAsync(WinServiceKey key)
         {
             Dictionary<string, string> contentParam = new Dictionary<string, string>
             {
                 { APICommandField.COMMAND, APIActionField.PRODUCT_KEY },
                 { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
-                { APICommandField.MACHINE_NAME, Environment.MachineName },
-                { APICommandField.PRODUCT_KEY, productKey },
-                { APICommandField.PRODUCT_KEY_TYPE, keyType },
-                { APICommandField.DESCRIPTION, description },
+                { APICommandField.MAC_ADDRESS, key.Computer.Mac },
+                { APICommandField.PRODUCT_KEY, key.Key },
+                { APICommandField.PRODUCT_KEY_TYPE, key.Type },
+                { APICommandField.DESCRIPTION, key.Description },
                 { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
             };
             string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);
             if (!response.Equals(""))
             {
-                LogWriter.Instance.Write("Send Windows Key response: " + response);
+                LogWriter.Instance.Write("Send key response: " + response);
             }
         }
 

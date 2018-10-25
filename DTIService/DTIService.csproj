@@ -97,6 +97,7 @@
     <Compile Include="External\MSKeyFinder.cs" />
     <Compile Include="API\IParser.cs" />
     <Compile Include="Model\WinServiceComputer.cs" />
+    <Compile Include="Model\WinServiceKey.cs" />
     <Compile Include="Service\Invetory.cs">
       <SubType>Component</SubType>
     </Compile>

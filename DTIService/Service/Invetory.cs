@@ -4,12 +4,14 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using WinProdKeyFind;
 
 namespace DTIService.Service
 {
@@ -64,6 +66,8 @@ namespace DTIService.Service
             Task.Factory.StartNew(() =>
                 API.Parser.Instance.RegistrationAsync(this.GetComputerInformation())
             );
+            this.SearchForWindowsKeyInRegistry();
+            this.SearchForWindowsKeyInOEM();
         }
 
         protected override void OnStop()
@@ -112,6 +116,47 @@ namespace DTIService.Service
             }
         }
 
+        private void SearchForWindowsKeyInRegistry()
+        {
+            LogWriter.Instance.Write("Procurando por chaves de registro.");
+            string winkey = KeyDecoder.GetWindowsProductKeyFromRegistry();
+            WinServiceKey key = new WinServiceKey(this.GetComputerInformation(), winkey, API.APIProductKeyType.WINDOWS);
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.SendProdKeyAsync(key)
+            );
+        }
+
+        private void SearchForWindowsKeyInOEM()
+        {
+            string winKey = "";
+            try
+            {
+                LogWriter.Instance.Write(KeyDecoder.GetWindowsProductKeyFromRegistry().ToString());
+                string query = "select * from SoftwareLicensingService";
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
+                using (ManagementObjectCollection results = searcher.Get())
+                {
+                    foreach (ManagementObject result in results)
+                    {
+                        using (result)
+                        {
+                            winKey = result.GetPropertyValue("OA3xOriginalProductKey").ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Instance.Write(ex.ToString());
+            }
+            if (!winKey.Equals(""))
+            {
+                WinServiceKey key = new WinServiceKey(this.GetComputerInformation(), winKey, API.APIProductKeyType.OEM);
+                Task.Factory.StartNew(() =>
+                    API.Parser.Instance.SendProdKeyAsync(key)
+                );
+            }
+        }
 
         private void GetInstalledAppsAtKey(List<ProgramLog> list, String uninstallKey, bool is64BitsKey = false)
         {
@@ -179,7 +224,6 @@ namespace DTIService.Service
         {
             File.WriteAllText(@"C:\DTI Services\version.txt", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
-
 
         private string GetOSFriendlyName()
         {

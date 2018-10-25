@@ -8,6 +8,6 @@ namespace DTIService.Interface
     {
         Task UploadInstalledProgramsAsync(WinServiceComputer computer, string csvPath);
         Task RegistrationAsync(WinServiceComputer computer);
-        Task SendProdKeyAsync(string productKey, string keyType = APIProductKeyType.GENERIC, string description = "");
+        Task SendProdKeyAsync(WinServiceKey key);
     }
 }
