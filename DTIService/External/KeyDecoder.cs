@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Win32;
 
 namespace WinProdKeyFind
@@ -153,5 +154,70 @@ namespace WinProdKeyFind
 
             return key;
         }
+
+        private static string decodeMicrosoftProductID(byte[] digitalProductId)
+        {
+            if (digitalProductId == null)
+            {
+                return "Product key not available.";
+            }
+
+            String productkey;
+            const int KeyOffset = 52;
+            string Chars = "BCDFGHJKMPQRTVWXY2346789";
+            try
+            {
+                byte isWin8 = (byte)((digitalProductId[66] / 6) & 1);
+                digitalProductId[66] = (byte)((digitalProductId[66] & 0xF7) | ((isWin8 & 2) * 4));
+                int iteration = 24;
+                string keyoutput = "";
+                int last = 0;
+                do
+                {
+                    int current = 0;
+                    int X = 14;
+                    do
+                    {
+                        current = current * 256;
+                        current = digitalProductId[X + KeyOffset] + current;
+                        digitalProductId[X + KeyOffset] = (byte)(current / 24);
+                        current = current % 24;
+                        --X;
+                    }
+                    while (X >= 0);
+                    iteration--;
+                    keyoutput = Chars.Substring(current, 1) + keyoutput;
+                    last = current;
+                }
+                while (iteration >= 0);
+                if (isWin8 == 1)
+                {
+                    string keypart1 = keyoutput.Substring(1, last);
+                    keyoutput = keyoutput.Substring(1);
+                    int pos = keyoutput.IndexOf(keypart1, StringComparison.OrdinalIgnoreCase);
+                    if (pos > -1)
+                    {
+                        keyoutput = keyoutput.Substring(0, pos) + keypart1 + "N" + keyoutput.Substring(pos + keypart1.Length);
+                    }
+                    if (last == 0)
+                    {
+                        keyoutput = "N" + keyoutput;
+                    }
+                }
+                String a = keyoutput.Substring(0, 5);
+                String b = keyoutput.Substring(5, 5);
+                String c = keyoutput.Substring(10, 5);
+                String d = keyoutput.Substring(15, 5);
+                String e = keyoutput.Substring(20, 5);
+
+                productkey = a + "-" + b + "-" + c + "-" + d + "-" + e;
+            }
+            catch (Exception e)
+            {
+                productkey = "Unspecified error occured.\n" + e.Message;
+            }
+            return productkey;
+        }
     }
+
 }

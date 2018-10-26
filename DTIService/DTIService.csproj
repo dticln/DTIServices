@@ -74,7 +74,26 @@
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\Release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -96,6 +115,8 @@
     <Compile Include="External\KeyDecoder.cs" />
     <Compile Include="External\MSKeyFinder.cs" />
     <Compile Include="API\IParser.cs" />
+    <Compile Include="External\ProduKeyConnector.cs" />
+    <Compile Include="External\StringCipher.cs" />
     <Compile Include="Model\WinServiceComputer.cs" />
     <Compile Include="Model\WinServiceKey.cs" />
     <Compile Include="Service\Invetory.cs">
@@ -106,6 +127,7 @@
     </Compile>
     <Compile Include="Model\ProgramLog.cs" />
     <Compile Include="API\Parser.cs" />
+    <Compile Include="Util\Helper.cs" />
     <Compile Include="Util\LogWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -119,6 +141,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="DTIService_TemporaryKey.pfx" />
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
   </ItemGroup>
   <ItemGroup>

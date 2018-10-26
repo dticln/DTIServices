@@ -74,9 +74,9 @@ namespace DTIService.API
                 { APICommandField.COMMAND, APIActionField.PRODUCT_KEY },
                 { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
                 { APICommandField.MAC_ADDRESS, key.Computer.Mac },
-                { APICommandField.PRODUCT_KEY, key.Key },
+                { APICommandField.PRODUCT_KEY, key.ProductKey },
                 { APICommandField.PRODUCT_KEY_TYPE, key.Type },
-                { APICommandField.DESCRIPTION, key.Description },
+                { APICommandField.DESCRIPTION, key.ProductName },
                 { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
             };
             string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);

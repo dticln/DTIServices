@@ -1,4 +1,5 @@
-﻿using DTIService.Model;
+﻿using DTIService.External;
+using DTIService.Model;
 using DTIService.Util;
 using Microsoft.Win32;
 using System;
@@ -8,6 +9,7 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.ServiceProcess;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +33,7 @@ namespace DTIService.Service
             "Hotfix",
             "Update for"
         };
+        private WinServiceComputer computerInformation;
 
         public Invetory()
         {
@@ -38,36 +41,17 @@ namespace DTIService.Service
         }
 
         protected override void OnStart(string[] args)
-        {   
-            /*
-            try
-            {
-                LogWriter.Instance.Write(KeyDecoder.GetWindowsProductKeyFromRegistry().ToString());
-                string query = "select * from SoftwareLicensingService";
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
-                using (ManagementObjectCollection results = searcher.Get())
-                {
-                    foreach (ManagementObject result in results)
-                    {
-                        using (result)
-                        {
-                            LogWriter.Instance.Write(result.GetPropertyValue("OA3xOriginalProductKey").ToString());
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogWriter.Instance.Write(ex.ToString());
-            }*/
+        {
             this.CreateVersionFile();
+            this.computerInformation = this.GetComputerInformation();
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.RegistrationAsync(computerInformation)
+            );
             this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
             Task.Factory.StartNew(() =>
-                API.Parser.Instance.RegistrationAsync(this.GetComputerInformation())
+                this.SearchForKeys()
             );
-            this.SearchForWindowsKeyInRegistry();
-            this.SearchForWindowsKeyInOEM();
         }
 
         protected override void OnStop()
@@ -106,7 +90,7 @@ namespace DTIService.Service
                     writer.Flush();
                     writer.Close();
                     Task.Factory.StartNew(() =>
-                        API.Parser.Instance.UploadInstalledProgramsAsync(this.GetComputerInformation(), this.csvPath)
+                        API.Parser.Instance.UploadInstalledProgramsAsync(this.computerInformation, this.csvPath)
                     );
                 }
                 catch (Exception ex)
@@ -116,49 +100,42 @@ namespace DTIService.Service
             }
         }
 
-        private void SearchForWindowsKeyInRegistry()
+        private async Task SearchForKeys()
         {
-            LogWriter.Instance.Write("Procurando por chaves de registro.");
-            string winkey = KeyDecoder.GetWindowsProductKeyFromRegistry();
-            WinServiceKey key = new WinServiceKey(this.GetComputerInformation(), winkey, API.APIProductKeyType.WINDOWS);
-            Task.Factory.StartNew(() =>
-                API.Parser.Instance.SendProdKeyAsync(key)
-            );
-        }
-
-        private void SearchForWindowsKeyInOEM()
-        {
-            string winKey = "";
-            try
+            List<WinServiceKey> keys = ProduKeyConnector.Instance.FindProductKeys(this.computerInformation);
+            foreach (WinServiceKey key in keys)
             {
-                LogWriter.Instance.Write(KeyDecoder.GetWindowsProductKeyFromRegistry().ToString());
-                string query = "select * from SoftwareLicensingService";
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
-                using (ManagementObjectCollection results = searcher.Get())
+                await API.Parser.Instance.SendProdKeyAsync(key);
+            }
+        }
+        
+        private object FindValueInRegistry(string haystack, string needle)
+        {
+            var baseKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
+            using (RegistryKey rk = baseKey.OpenSubKey(haystack))
+            {
+                if (rk != null)
                 {
-                    foreach (ManagementObject result in results)
+                    if (rk.GetValue(needle) != null)
                     {
-                        using (result)
+                        return rk.GetValue(needle);
+                    } else
+                    {
+                        foreach (string skName in rk.GetSubKeyNames())
                         {
-                            winKey = result.GetPropertyValue("OA3xOriginalProductKey").ToString();
+                            object finded = FindValueInRegistry(haystack + "\\" + skName, needle);
+                            if (finded != null)
+                            {
+                                return finded;
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                LogWriter.Instance.Write(ex.ToString());
-            }
-            if (!winKey.Equals(""))
-            {
-                WinServiceKey key = new WinServiceKey(this.GetComputerInformation(), winKey, API.APIProductKeyType.OEM);
-                Task.Factory.StartNew(() =>
-                    API.Parser.Instance.SendProdKeyAsync(key)
-                );
+                return null;
             }
         }
 
-        private void GetInstalledAppsAtKey(List<ProgramLog> list, String uninstallKey, bool is64BitsKey = false)
+        private void GetInstalledAppsAtKey(List<ProgramLog> list, string uninstallKey, bool is64BitsKey = false)
         {
             using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(uninstallKey))
             {
@@ -166,6 +143,7 @@ namespace DTIService.Service
                 {
                     using (RegistryKey sk = rk.OpenSubKey(skName))
                     {
+
                         try
                         {
                             string displayName = sk.GetValue("DisplayName").ToString();
@@ -202,7 +180,7 @@ namespace DTIService.Service
         private WinServiceComputer GetComputerInformation()
         {
             WinServiceComputer computer = new WinServiceComputer();
-            computer.WindowsVersion = this.GetOSFriendlyName();
+            computer.WindowsVersion = Helper.GetOSFriendlyName();
             Regex ufrgsNetwork = new Regex(@"143.54.*");
             foreach(NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
             {
@@ -223,29 +201,6 @@ namespace DTIService.Service
         private void CreateVersionFile()
         {
             File.WriteAllText(@"C:\DTI Services\version.txt", Assembly.GetExecutingAssembly().GetName().Version.ToString());
-        }
-
-        private string GetOSFriendlyName()
-        {
-            string ProductName = HKLMGetString(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
-            string CSDVersion = HKLMGetString(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CSDVersion");
-            if (ProductName != "")
-            {
-                return (ProductName.StartsWith("Microsoft") ? "" : "Microsoft ") + ProductName +
-                            (CSDVersion != "" ? " " + CSDVersion : "");
-            }
-            return "";
-        }
-
-        private string HKLMGetString(string path, string key)
-        {
-            try
-            {
-                RegistryKey rk = Registry.LocalMachine.OpenSubKey(path);
-                if (rk == null) return "";
-                return (string)rk.GetValue(key);
-            }
-            catch { return ""; }
         }
     }
 }
