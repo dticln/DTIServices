@@ -30,7 +30,7 @@
         {
             this.scnInstalled = new System.ServiceProcess.ServiceController();
             // 
-            // InstalledPrograms
+            // Invetory
             // 
             this.ServiceName = "InstalledPrograms";
 
