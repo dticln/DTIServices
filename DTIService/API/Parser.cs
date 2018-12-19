@@ -40,7 +40,7 @@ namespace DTIService.API
             {
                 { APICommandField.BIN_REPORT, File.ReadAllBytes(csvPath) }
             };
-            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam, binaryParam);
+            string response = await SendFormAsync(EnvManager.Instance.Environment.ApiUri, contentParam, binaryParam);
             if (!response.Equals(""))
             {
                 LogWriter.Instance.Write("Programas instalados. Resposta: " + response);
@@ -60,7 +60,7 @@ namespace DTIService.API
                 { APICommandField.CLIENT_VERSION, Assembly.GetExecutingAssembly().GetName().Version.ToString() },
                 { APICommandField.WINDOWS_VERSION, computer.WindowsVersion }
             };
-            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);
+            string response = await SendFormAsync(EnvManager.Instance.Environment.ApiUri, contentParam);
             if (!response.Equals(""))
             {
                 LogWriter.Instance.Write("Registro de estação. Resposta: " + response);
@@ -79,14 +79,34 @@ namespace DTIService.API
                 { APICommandField.DESCRIPTION, key.ProductName },
                 { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
             };
-            string response = await SendForm(EnvManager.Instance.Environment.ApiUri, contentParam);
+            string response = await SendFormAsync(EnvManager.Instance.Environment.ApiUri, contentParam);
             if (!response.Equals(""))
             {
                 LogWriter.Instance.Write("Send key response: " + response);
             }
         }
 
-        protected async Task<String> SendForm(String URI, Dictionary<String, String> formField, Dictionary<String, byte[]> binFormField = null)
+        public async Task SendAdministratorAsync(WinServiceAdmin admin)
+        {
+            Dictionary<string, string> contentParam = new Dictionary<string, string>
+            {
+                { APICommandField.COMMAND, APIActionField.COMPUTER_ADMIN },
+                { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
+                { APICommandField.MAC_ADDRESS, admin.Computer.Mac },
+                { APICommandField.ADMIN_NAME, admin.Name },
+                { APICommandField.ADMIN_FULLNAME, admin.FullName },
+                { APICommandField.ADMIN_TYPE, admin.Type },
+                { APICommandField.ADMIN_LAST_LOGIN, admin.LastLogin },
+                { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
+            };
+            string response = await SendFormAsync(EnvManager.Instance.Environment.ApiUri, contentParam);
+            if (!response.Equals(""))
+            {
+                LogWriter.Instance.Write("Send admin response: " + response);
+            }
+        }
+
+        protected async Task<String> SendFormAsync(String URI, Dictionary<String, String> formField, Dictionary<String, byte[]> binFormField = null)
         {
             try
             {

@@ -14,6 +14,10 @@
         public const string PRODUCT_KEY_TYPE = "product_key_type";
         public const string BIN_REPORT = "installed_report";
 
+        public const string ADMIN_NAME = "admin_name";
+        public const string ADMIN_FULLNAME = "admin_fullname";
+        public const string ADMIN_TYPE = "admin_type";
+        public const string ADMIN_LAST_LOGIN = "admin_last_login";
     }
 
     public class APIActionField
@@ -21,6 +25,7 @@
         public const string INSTALLED_PROGRAMS = "1";
         public const string REGISTRATION = "2";
         public const string PRODUCT_KEY = "3";
+        public const string COMPUTER_ADMIN = "4";
     }
 
     public class APIProductKeyType

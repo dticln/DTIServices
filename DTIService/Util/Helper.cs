@@ -1,4 +1,6 @@
 ﻿using Microsoft.Win32;
+using System;
+using System.DirectoryServices;
 
 namespace DTIService.Util
 {
@@ -16,7 +18,7 @@ namespace DTIService.Util
             }
             return "";
         }
-
+        
         public static string HKLMGetString(string path, string key)
         {
             try
@@ -26,6 +28,17 @@ namespace DTIService.Util
                 return (string)rk.GetValue(key);
             }
             catch { return ""; }
+        }
+
+        public static DirectoryEntry GetGroupFromDirectory(DirectoryEntry directory, string name)
+        {
+            DirectoryEntry group = null;
+            try
+            {
+                group = directory.Children.Find(name, "group");
+            }
+            catch (Exception ex) { }
+            return group;
         }
 
     }

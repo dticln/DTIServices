@@ -3,7 +3,9 @@ using DTIService.Model;
 using DTIService.Util;
 using Microsoft.Win32;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.DirectoryServices;
 using System.IO;
 using System.Management;
 using System.Net.NetworkInformation;
@@ -47,11 +49,14 @@ namespace DTIService.Service
             Task.Factory.StartNew(() =>
                 API.Parser.Instance.RegistrationAsync(computerInformation)
             );
+            Task.Factory.StartNew(() =>
+                this.SearchForKeysAsync()
+            );
+            Task.Factory.StartNew(() =>
+                this.SearchForAdministrators()
+            );
             this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
-            Task.Factory.StartNew(() =>
-                this.SearchForKeys()
-            );
         }
 
         protected override void OnStop()
@@ -100,7 +105,7 @@ namespace DTIService.Service
             }
         }
 
-        private async Task SearchForKeys()
+        private async Task SearchForKeysAsync()
         {
             List<WinServiceKey> keys = ProduKeyConnector.Instance.FindProductKeys(this.computerInformation);
             foreach (WinServiceKey key in keys)
@@ -174,6 +179,40 @@ namespace DTIService.Service
                         { }
                     }
                 }
+            }
+        }
+
+        private async Task SearchForAdministrators()
+        {
+            List<WinServiceAdmin> admins = new List<WinServiceAdmin>();
+            using (DirectoryEntry directory = new DirectoryEntry("WinNT://" + Environment.MachineName + ",computer"))
+            {
+                DirectoryEntry group = Helper.GetGroupFromDirectory(directory, "Administrators");
+                if (group == null)
+                {
+                    group = Helper.GetGroupFromDirectory(directory, "Administradores");
+                }
+                if (group != null)
+                {
+                    var entries = group.Invoke("Members", null);
+                    foreach (var entry in (IEnumerable)entries)
+                    {
+                        DirectoryEntry member = new DirectoryEntry(entry);
+                        admins.Add(
+                            new WinServiceAdmin(
+                                member.Name, 
+                                member.SchemaClassName,
+                                member.Properties.Contains("FullName") ? member.Properties["FullName"].Value.ToString() : "",
+                                member.Properties.Contains("LastLogin") ? member.Properties["LastLogin"].Value.ToString() : "", 
+                                this.computerInformation
+                            )
+                        );
+                    }
+                }
+            }
+            foreach(WinServiceAdmin admin in admins)
+            {
+                await API.Parser.Instance.SendAdministratorAsync(admin);
             }
         }
 

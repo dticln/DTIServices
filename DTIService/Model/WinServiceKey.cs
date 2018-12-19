@@ -25,6 +25,7 @@ namespace DTIService.Model
         public string ServicePack { get => servicePack; set => servicePack = value; }
         public string ModifiedTime { get => modifiedTime; set => modifiedTime = value; }
         internal WinServiceComputer Computer { get => computer; set => computer = value; }
+
         public string Type {
             get => type;
             set {

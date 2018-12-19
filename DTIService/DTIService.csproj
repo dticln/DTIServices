@@ -97,6 +97,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -119,6 +120,7 @@
     <Compile Include="External\StringCipher.cs" />
     <Compile Include="Model\WinServiceComputer.cs" />
     <Compile Include="Model\WinServiceKey.cs" />
+    <Compile Include="Model\WinServiceAdmin.cs" />
     <Compile Include="Service\Invetory.cs">
       <SubType>Component</SubType>
     </Compile>
