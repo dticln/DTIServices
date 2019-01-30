@@ -12,6 +12,7 @@ namespace DTIService
         /// </summary>
         static void Main()
         {
+            LogWriter.Instance.RenewLogFile();
             LogWriter.Instance.Write("Iniciando DTIServices em " + Environment.MachineName);
             LogWriter.Instance.Write("Sistema: " + Environment.OSVersion.ToString());
             LogWriter.Instance.Write("Inicio em: " + DateTime.Now);

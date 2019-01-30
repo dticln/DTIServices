@@ -33,5 +33,17 @@ namespace DTIService.Util
                 return instance;
             }
         }
+
+        public void RenewLogFile()
+        {
+            if(File.Exists(@"c:\DTI Services\service.log.old"))
+            {
+                File.Delete(@"c:\DTI Services\service.log.old");
+            }
+            if(File.Exists(@"c:\DTI Services\service.log"))
+            {
+                File.Move(@"c:\DTI Services\service.log", @"c:\DTI Services\service.log.old");
+            }
+        }
     }
 }

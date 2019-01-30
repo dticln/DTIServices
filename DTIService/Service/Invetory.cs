@@ -24,7 +24,8 @@ namespace DTIService.Service
         private Timer baseTimer;
         private Timer searchTimer;
         private string csvPath = @"c:\DTI Services\InstalledReport\report.csv";
-        private string[] excludedPrograms = {
+        private List<string> excludedPrograms = new List<string>()
+        {
             "Security Update for Windows",
             "Update for Windows",
             "Update for Microsoft .NET",
@@ -35,6 +36,7 @@ namespace DTIService.Service
             "Hotfix",
             "Update for"
         };
+
         private WinServiceComputer computerInformation;
 
         public Invetory()
@@ -68,7 +70,7 @@ namespace DTIService.Service
         {
             LogWriter.Instance.Write(Environment.MachineName + " diz \"estou aqui\".");
         }
-
+        
         private void SearchForPrograms(object state)
         {
             if (!File.Exists(this.csvPath) ||
@@ -171,6 +173,7 @@ namespace DTIService.Service
                                         sk.GetValue("DisplayVersion").ToString(),
                                         is64BitsKey
                                     );
+                                    this.excludedPrograms.Add(log.DisplayName);
                                     list.Add(log);
                                 }
                             }
