@@ -8,6 +8,7 @@ using DTIService.Util;
 using DTIService.Model;
 using System.Reflection;
 using DTIService.Config;
+using static DTIService.Config.EnvManager;
 
 namespace DTIService.API
 {
@@ -103,6 +104,23 @@ namespace DTIService.API
             if (!response.Equals(""))
             {
                 LogWriter.Instance.Write("Send admin response: " + response);
+            }
+        }
+
+        public async Task SendMachineStatus(WinServiceComputer computer, string status)
+        {
+            Dictionary<string, string> contentParam = new Dictionary<string, string>
+            {
+                { APICommandField.COMMAND, APIActionField.MACHINE_STATUS },
+                { APICommandField.SECURE_KEY, EnvManager.Instance.Environment.AccessKey },
+                { APICommandField.MAC_ADDRESS, computer.Mac },
+                { APICommandField.LAST_STATUS, status },
+                { APICommandField.CLIENT_VERSION,  Assembly.GetExecutingAssembly().GetName().Version.ToString() }
+            };
+            string response = await SendFormAsync(EnvManager.Instance.Environment.ApiUri, contentParam);
+            if (!response.Equals(""))
+            {
+                LogWriter.Instance.Write("Machine status response: " + response);
             }
         }
 

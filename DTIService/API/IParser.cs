@@ -10,5 +10,6 @@ namespace DTIService.Interface
         Task RegistrationAsync(WinServiceComputer computer);
         Task SendProdKeyAsync(WinServiceKey key);
         Task SendAdministratorAsync(WinServiceAdmin admin);
+        Task SendMachineStatus(WinServiceComputer computer, string status);
     }
 }

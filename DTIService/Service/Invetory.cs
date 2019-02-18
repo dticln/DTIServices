@@ -1,4 +1,5 @@
-﻿using DTIService.External;
+﻿using DTIService.Config;
+using DTIService.External;
 using DTIService.Model;
 using DTIService.Util;
 using Microsoft.Win32;
@@ -23,6 +24,7 @@ namespace DTIService.Service
     {
         private Timer baseTimer;
         private Timer searchTimer;
+
         private string csvPath = @"c:\DTI Services\InstalledReport\report.csv";
         private List<string> excludedPrograms = new List<string>()
         {
@@ -57,20 +59,31 @@ namespace DTIService.Service
             Task.Factory.StartNew(() =>
                 this.SearchForAdministrators()
             );
-            this.baseTimer = new Timer(new TimerCallback(SayHello), null, 15000, 15 * 60000);
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.SendMachineStatus(this.computerInformation, API.APIComputerStatus.WAKEUP)
+            );
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
+            this.baseTimer = new Timer(new TimerCallback(SayHereIAm), null, 5000, 30 * 60000);
         }
 
         protected override void OnStop()
         {
             LogWriter.Instance.Write("Encerrando serviço.");
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.SendMachineStatus(this.computerInformation, API.APIComputerStatus.SLEEP)
+            );
+            Thread.Sleep(EnvManager.Instance.Environment.SleepMessageTimeOut);
+            LogWriter.Instance.Write("Serviço encerrado.");
+            base.OnStop();
         }
 
-        private void SayHello(object state)
+        private void SayHereIAm(object state)
         {
-            LogWriter.Instance.Write(Environment.MachineName + " diz \"estou aqui\".");
+            Task.Factory.StartNew(() =>
+                API.Parser.Instance.SendMachineStatus(this.computerInformation, API.APIComputerStatus.ONLINE)
+            );
         }
-        
+
         private void SearchForPrograms(object state)
         {
             if (!File.Exists(this.csvPath) ||

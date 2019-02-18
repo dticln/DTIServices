@@ -4,7 +4,7 @@ namespace DTIService.Config
 {
     class EnvManager
     {
-        private static EnvType envType = EnvType.PRODUCTION;
+        private static EnvType envType = EnvType.DEVELOPMENT;
 
         private static readonly EnvManager instance = new EnvManager(EnvManager.envType);
         private IEnviroment environment;
@@ -32,6 +32,7 @@ namespace DTIService.Config
                 return instance;
             }
         }
+
 
         public enum EnvType
         {

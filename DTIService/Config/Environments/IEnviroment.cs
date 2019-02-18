@@ -6,5 +6,6 @@
         string ApiUri { get; }
         string EnvName { get; }
         string ProduKeySecret { get; }
+        int SleepMessageTimeOut { get; }
     }
 }
