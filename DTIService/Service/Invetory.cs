@@ -59,20 +59,12 @@ namespace DTIService.Service
             Task.Factory.StartNew(() =>
                 this.SearchForAdministrators()
             );
-            Task.Factory.StartNew(() =>
-                API.Parser.Instance.SendMachineStatus(this.computerInformation, API.APIComputerStatus.WAKEUP)
-            );
             this.searchTimer = new Timer(new TimerCallback(SearchForPrograms), null, 15000, 60 * 60000);
-            this.baseTimer = new Timer(new TimerCallback(SayHereIAm), null, 5000, 30 * 60000);
+            this.baseTimer = new Timer(new TimerCallback(SayHereIAm), null, 5000, 10 * 60000);
         }
-
+        
         protected override void OnStop()
         {
-            LogWriter.Instance.Write("Encerrando serviço.");
-            Task.Factory.StartNew(() =>
-                API.Parser.Instance.SendMachineStatus(this.computerInformation, API.APIComputerStatus.SLEEP)
-            );
-            Thread.Sleep(EnvManager.Instance.Environment.SleepMessageTimeOut);
             LogWriter.Instance.Write("Serviço encerrado.");
             base.OnStop();
         }
